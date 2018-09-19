@@ -4,7 +4,6 @@ import numpy as np
 from PIL import Image
 import re
 import binascii
-import hashlib
 
 
 
@@ -176,6 +175,7 @@ def resolve_digest_auth(url, user, crackmd5="c627e19450db746b739f41b64097d449"):
     :param crackmd5:
     :return:
     """
+    import hashlib
     uri = re.search("https{0,1}://[^/]+(.+)", url).group(1)
     s = requests.session()
     r = s.get(url)
@@ -209,9 +209,17 @@ def resolve_digest_auth(url, user, crackmd5="c627e19450db746b739f41b64097d449"):
     return r.text
 
 
+def generate_pem(n, e, d):
+    from Crypto.PublicKey import RSA
+    key = RSA.construct(map(int, (n, e, d)))
+    return key.exportKey()
+
+
 def main():
     pass
 
 
 if __name__ == "__main__":
     main()
+
+    # TODO http://sonickun.hatenablog.com/entry/2016/03/23/220652
