@@ -209,6 +209,36 @@ def resolve_digest_auth(url, user, crackmd5="c627e19450db746b739f41b64097d449"):
     return r.text
 
 
+def ncr(n, r):
+    """
+    c# algorithm by http://d.hatena.ne.jp/kadzus/20081211/1229023326
+    python algorithm by https://qiita.com/derodero24/items/91b6468e66923a87f39f
+    :param n:
+    :param r:
+    :return:
+    """
+    if n - r < r:
+        r = n - r
+    if r == 0:
+        return 1
+    if r == 1:
+        return n
+    numerator = [n - r + k + 1 for k in range(r)]
+    denominator = [k + 1 for k in range(r)]
+    for p in range(2, r+1):
+        pivot = denominator[p - 1]
+        if pivot > 1:
+            offset = (n - r) % p
+            for k in range(p-1, r, p):
+                numerator[k - offset] /= pivot
+                denominator[k] /= pivot
+    result = 1
+    for k in range(r):
+        if numerator[k] > 1:
+            result *= int(numerator[k])
+    return result
+
+
 def generate_pem(n, e, d):
     from Crypto.PublicKey import RSA
     key = RSA.construct(map(int, (n, e, d)))
